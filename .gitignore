@@ -1,0 +1,10 @@
+node_modules/
+saved_games/
+*.log
+.env
+.DS_Store
+Thumbs.db
+test_*.py
+test_*.js
+test_*.jpg
+make_shapes.py

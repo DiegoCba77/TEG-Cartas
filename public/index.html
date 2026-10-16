@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>T.E.G. Cartas — Juego Online</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════ PANTALLA DE LOBBY ═══════════════════ -->
+<div id="lobby-screen" class="screen active">
+  <div class="lobby-backdrop"></div>
+  <div class="lobby-panel">
+    <div class="lobby-title-wrap">
+      <h1 class="lobby-title">T.E.G.</h1>
+      <span class="lobby-sub">CARTAS</span>
+    </div>
+    <div class="lobby-tagline">PLANIFICA • ATACA • CONQUISTA EL PLANETA</div>
+
+    <div class="lobby-box">
+      <div class="form-group">
+        <label>TU NOMBRE DE COMANDANTE</label>
+        <input id="input-name" type="text" placeholder="Ej: General San Martín" maxlength="20" autofocus />
+      </div>
+
+      <div class="form-group">
+        <label>CÓDIGO DE SALA</label>
+        <input id="input-room" type="text" placeholder="SALA" maxlength="10" value="TEG" />
+      </div>
+
+      <div class="form-group">
+        <label>TU POTENCIA MILITAR (SEGUNDA GUERRA MUNDIAL)</label>
+        <div class="color-picker-grid" id="color-picker-grid">
+          <!-- Generado dinámicamente con las 4 potencias -->
+        </div>
+        <div class="color-picker-hint" id="color-picker-hint">4 potencias disponibles</div>
+      </div>
+
+      <!-- OPCIONES DE BOTS (IA) EN MENÚ PRINCIPAL -->
+      <div class="form-group">
+        <label>RIVALES IA (BOTS EN SALA)</label>
+        <div class="lobby-bots-control">
+          <div class="lobby-bots-status" id="lobby-bots-status">
+            <span>Comandantes en sala: <strong id="lobby-player-count">0</strong>/4</span>
+            <span id="lobby-bots-sub" style="font-size:11px; color:#8da4be;">Sin rivales aún</span>
+          </div>
+          <div class="lobby-bots-actions">
+            <button type="button" class="btn-top btn-add-bot-lobby" id="btn-add-bot-lobby" onclick="addBotFromLobby()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M4 14C4 9 7 6 12 6s8 3 8 8"/><path d="M2 15h20l-2 3H4z"/><circle cx="12" cy="10" r="1.5" fill="currentColor"/></svg> + Agregar Oficial IA
+            </button>
+            <button type="button" class="btn-top btn-danger" style="flex:1; font-size:11px;" onclick="resetCurrentRoom()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:3px;"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> Vaciar Sala
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="joinGame()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:6px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l2 2 4-4-2-2"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-2 2-4-4 2-2"/></svg> ENTRAR A LA MESA
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MESA DE JUEGO ═══════════════════ -->
+<div id="game-screen" class="screen">
+  
+  <!-- BARRA SUPERIOR DE INFORMACIÓN -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="brand-title">T.E.G. CARTAS</span>
+      <span class="round-badge" id="lbl-round">Ronda 1</span>
+    </div>
+
+    <div class="turn-banner" id="turn-banner">
+      <span class="turn-indicator" id="turn-indicator">Esperando inicio...</span>
+    </div>
+
+    <div class="top-bar-right">
+      <div class="current-player-badge" id="current-player-badge" title="Tu perfil militar en esta batalla">
+        <div class="player-rank-avatar" id="header-player-avatar">★</div>
+        <div class="player-info-meta">
+          <div class="player-header-name" id="header-player-name">Comandante</div>
+          <div class="player-header-faction" id="header-player-faction">Potencia</div>
+        </div>
+      </div>
+      <button class="btn-top btn-leave-lobby" onclick="leaveToLobby()" title="Salir de la mesa y volver al cuartel general">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Salir al Lobby
+      </button>
+    </div>
+  </header>
+
+  <!-- TABLERO / MESA DE CARTAS -->
+  <main class="table-container">
+
+    <!-- PANEL LATERAL TÁCTICO: GUÍA DE TURNO Y ACCIONES -->
+    <aside class="tactical-sidebar" id="tactical-sidebar">
+      
+      <!-- Bloque 1: Guía y Turno Actual -->
+      <div class="sidebar-block turn-guide-block">
+        <div class="guide-badge" id="guide-badge">★ ESTADO</div>
+        <div class="guide-title" id="guide-title">Esperando...</div>
+        <div class="guide-desc" id="guide-desc">La partida aún no ha comenzado.</div>
+        
+        <div class="turn-steps-list" id="turn-steps-list">
+          <div class="step-item" id="step-1">
+            <span class="step-num">1</span>
+            <span class="step-text">Elegir territorio base</span>
+          </div>
+          <div class="step-item" id="step-2">
+            <span class="step-num">2</span>
+            <span class="step-text">Seleccionar frente enemigo</span>
+          </div>
+          <div class="step-item" id="step-3">
+            <span class="step-num">3</span>
+            <span class="step-text">Batalla de dados táctica</span>
+          </div>
+          <div class="step-item" id="step-4">
+            <span class="step-num">4</span>
+            <span class="step-text">Finalizar ofensiva</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloque 2: Acciones Tácticas del Turno -->
+      <div class="sidebar-block actions-block">
+        <div class="sidebar-block-title">COMANDOS OPERATIVOS</div>
+        <button class="btn-side-action btn-side-attack" id="btn-side-attack" onclick="openAttackSelectionModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:6px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l2 2 4-4-2-2"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-2 2-4-4 2-2"/></svg> Declarar Ofensiva
+        </button>
+        <button class="btn-side-action btn-side-end" id="btn-side-end" onclick="doEndTurn()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:6px;"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg> Finalizar Mi Turno
+        </button>
+        <button class="btn-side-action" onclick="toggleObjectiveModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:6px;"><circle cx="12" cy="12" r="9"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg> Misión Secreta
+        </button>
+        <button class="btn-side-action" onclick="openSpecialDeckInfo()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:middle; margin-right:6px;"><polygon points="12,2 15,8.5 22,9.3 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9.3 9,8.5"/></svg> Cartas Especiales (16)
+        </button>
+        <button class="btn-side-action" onclick="openDiceDeckInfo()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:6px;"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8" cy="16" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/></svg> Mazo de Combate
+        </button>
+      </div>
+
+      <!-- Bloque 3: Mini Mapa Geopolítico Mundial de Operaciones -->
+      <div class="sidebar-block mini-map-block">
+        <div class="sidebar-block-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" fill-opacity="0.3"/></svg> MAPA DE OPERACIONES
+        </div>
+        <div class="mini-map-container" id="mini-map-container">
+          <!-- Generado por miniMap.js -->
+        </div>
+        <div class="mini-map-legend" id="mini-map-legend"></div>
+      </div>
+
+    </aside>
+
+    <!-- MESA PRINCIPAL DE JUEGO -->
+    <div class="main-table-view">
+
+      <!-- SECTOR OPONENTES (Arriba) -->
+      <section class="opponents-zone" id="opponents-zone">
+        <!-- Generado por JS: un panel por cada rival con sus territorios boca arriba -->
+      </section>
+
+      <!-- ZONA CENTRAL DE BATALLA Y MAZOS -->
+      <section class="center-arena">
+        <!-- Mazos centrales y descartes -->
+        <div class="decks-rack">
+          <div class="deck-card dice-deck-pile" onclick="openDiceDeckInfo()" title="Clic para ver reglas de las cartas de dados">
+            <div class="card-inner deck-back">
+              <span class="deck-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f1c40f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" fill="#f1c40f" fill-opacity="0.2"/><circle cx="8" cy="8" r="1.5" fill="#f1c40f"/><circle cx="16" cy="8" r="1.5" fill="#f1c40f"/><circle cx="12" cy="12" r="1.5" fill="#f1c40f"/><circle cx="8" cy="16" r="1.5" fill="#f1c40f"/><circle cx="16" cy="16" r="1.5" fill="#f1c40f"/></svg>
+              </span>
+              <span class="deck-title">MUNICIONES</span>
+              <span class="deck-count" id="dice-deck-count">56</span>
+              <span class="deck-hint-pill">Manual ℹ</span>
+            </div>
+          </div>
+
+          <div class="deck-card dice-discard-pile" title="Pozo de descarte de dados">
+            <div class="card-inner deck-discard">
+              <span class="deck-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8da4be" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+              </span>
+              <span class="deck-title">DESCARTE</span>
+              <span class="deck-count" id="dice-discard-count">0</span>
+            </div>
+          </div>
+
+          <div class="deck-card special-deck-pile" onclick="openSpecialDeckInfo()" title="Clic para ver las 16 cartas especiales y cómo se ganan">
+            <div class="card-inner deck-back special-back">
+              <span class="deck-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#d4af37" stroke="none"><polygon points="12,2 15,8.5 22,9.3 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9.3 9,8.5"/></svg>
+              </span>
+              <span class="deck-title">ALTO MANDO</span>
+              <span class="deck-count" id="special-deck-count">16</span>
+              <span class="deck-hint-pill">Órdenes ℹ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Centro de combate en vivo con Drag & Drop y cartas ocultas -->
+        <div class="combat-display" id="combat-display" style="display:none"
+             ondragover="onCombatDisplayDragOver(event)"
+             ondragleave="onCombatDisplayDragLeave(event)"
+             ondrop="onCombatDisplayDrop(event)">
+          <div class="combat-header-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:6px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l2 2 4-4-2-2"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-2 2-4-4 2-2"/></svg> COMBATE EN PROGRESO
+          </div>
+          <div class="combat-instructions-bar" id="combat-instructions-bar">
+            🎯 <strong>Hacé clic</strong> en una carta de tu mano o <strong>arrastrala</strong> hasta la casilla de combate
+          </div>
+          <div class="combat-clash">
+            <!-- Atacante -->
+            <div class="combatant-box" id="atk-box">
+              <div class="combatant-label" id="atk-player-name">Atacante</div>
+              <div class="card-slot" id="atk-card-slot"
+                   ondragover="onCardSlotDragOver(event)"
+                   ondragleave="onCardSlotDragLeave(event)"
+                   ondrop="onCardSlotDrop(event, 'attacker')">
+                <div class="placeholder-card">Esperando carta...</div>
+              </div>
+              <div class="combat-territory" id="atk-territory-name">—</div>
+            </div>
+
+            <!-- VS y Resumen de dados -->
+            <div class="combat-vs-container">
+              <div class="combat-vs">VS</div>
+              <div class="combat-breakdown" id="combat-breakdown"></div>
+            </div>
+
+            <!-- Defensor -->
+            <div class="combatant-box" id="def-box">
+              <div class="combatant-label" id="def-player-name">Defensor</div>
+              <div class="card-slot" id="def-card-slot"
+                   ondragover="onCardSlotDragOver(event)"
+                   ondragleave="onCardSlotDragLeave(event)"
+                   ondrop="onCardSlotDrop(event, 'defender')">
+                <div class="placeholder-card">Esperando carta...</div>
+              </div>
+              <div class="combat-territory" id="def-territory-name">—</div>
+            </div>
+          </div>
+
+          <!-- Acciones del combate (defender con mazo o cerrar) -->
+          <div class="combat-actions" id="combat-actions"></div>
+        </div>
+
+        <!-- Notificación de acciones recientes -->
+        <div class="ticker-box" id="ticker-box">
+          <span class="ticker-icon">📡</span>
+          <span class="ticker-text" id="ticker-text">Bienvenidos a T.E.G. Cartas. Esperando jugadores...</span>
+        </div>
+      </section>
+
+      <!-- SECTOR DEL JUGADOR LOCAL (Abajo) -->
+      <section class="my-zone">
+        <!-- Mi mano de cartas privadas (Dados ordenados por fuerza + Especiales) + Objetivo Permanente -->
+        <div class="hand-container">
+          <div class="hand-header">
+            <div class="hand-tabs">
+              <span class="hand-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:middle; margin-right:4px;"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8" cy="16" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/></svg>
+                MI MANO DE COMBATE
+              </span>
+              <span class="hand-hint" id="hand-instruction">💡 En combate, hacé clic en una carta de dado o arrastrala</span>
+            </div>
+            <div class="hand-sort-badge">⚡ Ordenadas por mayor fuerza</div>
+            <span class="hand-count" id="hand-count">0 cartas</span>
+          </div>
+
+          <div class="hand-cards" id="my-hand-cards"></div>
+        </div>
+      </section>
+
+    </div> <!-- Fin .main-table-view -->
+
+    <!-- PANEL LATERAL DERECHO: MIS TERRITORIOS / FRENTES PROPIOS (WWII THEATER) -->
+    <aside class="territories-sidebar" id="territories-sidebar">
+      <div class="territories-sidebar-header">
+        <div class="t-sidebar-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:5px;"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          TERRITORIOS (<strong id="my-territory-count">0</strong>/40)
+        </div>
+        <div class="t-sidebar-hint">Hacé clic en un territorio para atacar</div>
+      </div>
+
+      <!-- Filtros por continente -->
+      <div class="continent-filters" id="continent-filters"></div>
+
+      <!-- Listado / Grilla vertical de cartas de territorio -->
+      <div class="territories-rack" id="my-territories-rack"></div>
+    </aside>
+
+  </main>
+</div>
+
+<!-- ═══════════════════ MODAL: ELEGIR DESTINO DE ATAQUE ═══════════════════ -->
+<div class="modal-backdrop" id="modal-target-selection" style="display:none">
+  <div class="teg-modal">
+    <div class="modal-header">
+      <div class="modal-title">⚔️ DECLARAR ATAQUE</div>
+      <div class="modal-subtitle" id="attack-source-desc">—</div>
+    </div>
+    <div class="modal-body">
+      <div class="target-grid" id="target-grid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-target-selection')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MODAL: OBJETIVO SECRETO ═══════════════════ -->
+<div class="modal-backdrop" id="modal-objective" style="display:none">
+  <div class="teg-modal objective-modal">
+    <div class="modal-header">
+      <div class="modal-title">🎯 MISIÓN MILITAR</div>
+      <div class="modal-subtitle">Información clasificada</div>
+    </div>
+    <div class="modal-body">
+      <div class="objective-card-view">
+        <div class="obj-badge">OBJETIVO SECRETO</div>
+        <h3 id="modal-obj-title">—</h3>
+        <p id="modal-obj-desc">—</p>
+      </div>
+
+      <div class="common-objective-box">
+        <div class="obj-badge common">OBJETIVO COMÚN</div>
+        <p id="modal-common-obj-desc">Ocupar 29 territorios (o 21 si juegan 4 jugadores).</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="closeModal('modal-objective')">Entendido ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MODAL: REGLAS Y CARTAS ESPECIALES ═══════════════════ -->
+<div class="modal-backdrop" id="modal-specials-info" style="display:none">
+  <div class="teg-modal" style="max-width: 680px; max-height: 85vh; overflow-y: auto;">
+    <div class="modal-header">
+      <div class="modal-title">★ MAZO DE CARTAS ESPECIALES (16 CARTAS)</div>
+      <div class="modal-subtitle">¿Cómo se consiguen y para qué sirven?</div>
+    </div>
+    <div class="modal-body" style="font-size: 13px; line-height: 1.5; color: #d0dbe5;">
+      <div class="info-alert" style="background: rgba(243, 156, 18, 0.15); border: 1px solid var(--gold); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+        <h4 style="color: var(--gold); margin: 0 0 6px 0; font-family: 'Cinzel', serif;">📜 Regla Oficial de Yetem:</h4>
+        <ul style="margin: 0; padding-left: 18px;">
+          <li><strong>Ronda 1:</strong> Nadie tiene cartas especiales. Se arranca solo con 5 cartas de dados.</li>
+          <li><strong>Rondas 2 en adelante:</strong> Al comienzo de cada ronda nueva, quien haya ganado <strong>al menos 1 combate</strong> en la ronda anterior roba <strong>1 carta especial</strong>.</li>
+          <li><strong>Continentes Completos:</strong> Quien domine un continente entero recibe cartas especiales extra (América del Sur: 1, África: 1, Oceanía: 1, Europa: 2, América del Norte: 2, Asia: 3).</li>
+        </ul>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+        <h4 style="margin:0; font-family:'Cinzel', serif; color:#fff;">Listado de las 16 Cartas Especiales:</h4>
+        <button class="btn-top" style="background: linear-gradient(135deg, #d4af37, #f39c12); color:#111; font-weight:800; border:none;" onclick="testDrawSpecialCard()">🧪 Robar 1 carta de prueba</button>
+      </div>
+
+      <div class="specials-catalogue-grid" id="specials-catalogue-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
+        <!-- Se llena con JS -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="closeModal('modal-specials-info')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MODAL: REGLAS MAZO DE DADOS ═══════════════════ -->
+<div class="modal-backdrop" id="modal-dice-info" style="display:none">
+  <div class="teg-modal" style="max-width: 580px;">
+    <div class="modal-header">
+      <div class="modal-title">🎲 MAZO DE CARTAS DE DADOS (56 CARTAS)</div>
+      <div class="modal-subtitle">Reglas de combate oficiales de T.E.G. Cartas</div>
+    </div>
+    <div class="modal-body" style="font-size: 13px; line-height: 1.5; color: #d0dbe5;">
+      <p>Cada carta de dados contiene <strong>3 números del 1 al 6</strong> ordenados de mayor a menor.</p>
+      
+      <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
+        <h4 style="color: var(--gold); margin: 0 0 6px 0; font-family: 'Cinzel', serif;">¿Cómo se resuelve una batalla?</h4>
+        <ol style="margin: 0; padding-left: 18px;">
+          <li>El atacante y el defensor juegan 1 carta de dados cada uno (o el defensor puede elegir sacar la carta superior del mazo).</li>
+          <li>Se comparan los dados <strong>mano a mano</strong>:
+            <ul>
+              <li>1º dado vs 1º dado</li>
+              <li>2º dado vs 2º dado</li>
+              <li>3º dado vs 3º dado</li>
+            </ul>
+          </li>
+          <li>Gana el número mayor. <strong>Los empates los gana siempre el defensor</strong>.</li>
+          <li>El que gana al menos 2 de los 3 duelos gana la batalla. Si gana el atacante, se queda con el territorio conquistado.</li>
+        </ol>
+      </div>
+
+      <div style="background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.4); border-radius: 8px; padding: 10px;">
+        💡 <strong>Cómo jugarlas:</strong> Podés hacer <strong>clic</strong> directamente en tu carta durante el combate o <strong>arrastrarla</strong> hacia la casilla de batalla.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="closeModal('modal-dice-info')">Entendido ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MODAL: ACTIVACIÓN CARTA ESPECIAL (DOSSIER MILITAR) ═══════════════════ -->
+<div class="modal-backdrop" id="modal-play-special" style="display:none">
+  <div class="teg-modal ww2-special-dossier-modal">
+    <div class="dossier-stamp">ALTO MANDO • TOP SECRET</div>
+    
+    <div class="modal-header dossier-header">
+      <div class="modal-title" id="play-special-title">ORDEN MILITAR ESPECIAL</div>
+      <div class="play-special-type" id="play-special-type">TÁCTICA DE GUERRA</div>
+    </div>
+
+    <div class="modal-body dossier-body">
+      <!-- Marco de Ilustración Conceptual Vectorial -->
+      <div class="play-special-artwork-frame" id="play-special-artwork-frame">
+        <!-- SVG conceptual generado por app.js -->
+      </div>
+
+      <!-- Indicador de Fase y Disponibilidad -->
+      <div class="play-special-timing" id="play-special-timing">
+        <!-- Badge verde o rojo según fase -->
+      </div>
+
+      <!-- Descripción táctica oficial -->
+      <div class="play-special-desc-box">
+        <div class="desc-label">EFECTO OPERATIVO:</div>
+        <p class="play-special-desc-text" id="play-special-desc-text">—</p>
+      </div>
+
+      <!-- Selector dinámico de objetivo (si requiere objetivo) -->
+      <div class="play-special-target-section" id="play-special-target-section" style="display:none;">
+        <div class="target-section-title" id="play-special-target-title">SELECCIONAR OBJETIVO:</div>
+        <div class="play-special-target-buttons" id="play-special-target-buttons"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer dossier-footer">
+      <button class="btn-top" onclick="closeModal('modal-play-special')">Cancelar</button>
+      <button class="btn-primary btn-execute-special" id="btn-execute-special" onclick="confirmPlaySpecialCard()">
+        EJECUTAR ORDEN TÁCTICA ⚡
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MODAL: VICTORIA ═══════════════════ -->
+<div class="modal-backdrop" id="modal-victory" style="display:none">
+  <div class="teg-modal victory-modal">
+    <div class="victory-crown">🏆</div>
+    <h1 class="victory-heading">¡DOMINIO MUNDIAL!</h1>
+    <div class="winner-name" id="winner-name">—</div>
+    <div class="winner-reason" id="winner-reason">—</div>
+    <div class="modal-footer" style="justify-content:center">
+      <button class="btn-primary" onclick="location.reload()">🎉 Volver al Inicio</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="icons.js"></script>
+<script src="miniMap.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

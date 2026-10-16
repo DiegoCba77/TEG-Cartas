@@ -1,0 +1,2207 @@
+/* ═══════════════════════════════════════════════════════
+   T.E.G. CARTAS — Tablero y Cartas Elegantes Estilo Editorial
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --bg-table: #0d151c;
+  --bg-felt: #11222f;
+  --card-bg: #f8f6f0;
+  --card-border: #d4af37;
+  --text-dark: #1a1a1a;
+  --gold: #f39c12;
+  --gold-glow: rgba(243, 156, 18, 0.4);
+  --danger: #e74c3c;
+  --success: #2ecc71;
+  --panel-bg: rgba(14, 25, 36, 0.85);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background-color: var(--bg-table);
+  color: #ecf0f1;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─────────────── PANTALLAS ─────────────── */
+.screen {
+  display: none;
+  width: 100vw;
+  height: 100vh;
+}
+.screen.active {
+  display: flex;
+}
+
+/* ─────────────── LOBBY RETRO WWII ─────────────── */
+#lobby-screen {
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #0b0f14 url('assets/ww2_lobby_bg.jpg') no-repeat center center;
+  background-size: cover;
+  overflow-y: auto;
+  padding: 20px 10px;
+}
+
+.lobby-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(10, 16, 22, 0.72) 0%, rgba(5, 8, 12, 0.92) 100%);
+  backdrop-filter: blur(2px);
+}
+
+.lobby-panel {
+  position: relative;
+  z-index: 10;
+  background: rgba(13, 20, 27, 0.94);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: 20px 28px;
+  width: 420px;
+  max-width: 94vw;
+  text-align: center;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.9), 0 0 20px rgba(212, 175, 55, 0.25);
+  margin: auto;
+}
+
+.lobby-title-wrap {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.lobby-title {
+  font-family: 'Cinzel', serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 5px;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+.lobby-sub {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--gold);
+}
+
+.lobby-tagline {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #9cb2c9;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.form-group {
+  text-align: left;
+  margin-bottom: 11px;
+}
+.form-group label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #a4b8cc;
+  margin-bottom: 4px;
+}
+.form-group input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+.form-group input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.color-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+.lobby-faction-card {
+  background: rgba(15, 25, 35, 0.75);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-left: 5px solid var(--faction-color, #555);
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.15s ease;
+}
+.lobby-faction-card:hover:not(.taken) {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(25, 40, 55, 0.85);
+}
+.lobby-faction-card.selected {
+  border-color: var(--gold);
+  background: rgba(25, 40, 55, 0.95);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(212, 175, 55, 0.1);
+  transform: scale(1.02);
+}
+.faction-flag {
+  font-size: 20px;
+  line-height: 1;
+}
+.faction-info {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+.faction-name {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+.faction-army {
+  font-size: 10px;
+  color: #8da4be;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.faction-badge {
+  font-size: 14px;
+  color: var(--faction-color);
+  font-weight: 900;
+}
+.faction-lock-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 15, 22, 0.9);
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #e74c3c;
+  letter-spacing: 1px;
+  backdrop-filter: blur(1px);
+}
+.lobby-faction-card.taken {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: grayscale(0.4);
+}
+.lobby-faction-card.taken .faction-lock-overlay {
+  display: flex;
+}
+.color-picker-hint {
+  font-size: 11px;
+  color: #8da4be;
+  text-align: center;
+  margin-top: 6px;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+/* OPCIONES DE BOTS EN EL LOBBY */
+.lobby-bots-control {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.lobby-bots-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #bdc3c7;
+}
+.lobby-bots-status strong {
+  color: var(--gold);
+  font-size: 14px;
+}
+.lobby-bots-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-add-bot-lobby {
+  flex: 1.4;
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(39, 174, 96, 0.3));
+  border-color: rgba(46, 204, 113, 0.5);
+  color: #2ecc71;
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-add-bot-lobby:hover {
+  background: rgba(46, 204, 113, 0.35);
+  color: #fff;
+  border-color: #2ecc71;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  background: linear-gradient(135deg, #d4af37, #f39c12);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(243, 156, 18, 0.6);
+}
+
+/* ─────────────── MESA DE JUEGO ─────────────── */
+#game-screen {
+  flex-direction: column;
+}
+
+.top-bar {
+  min-height: 56px;
+  background: #091016;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 18px;
+  z-index: 100;
+  position: relative;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+.round-badge {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 12px;
+  margin-left: 10px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.turn-banner {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  margin: 0 10px;
+}
+
+.turn-indicator {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+}
+
+/* TOOLBAR EN SALA DE ESPERA (WWII RETRO) */
+.ww2-waiting-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.btn-ww2-start {
+  background: linear-gradient(135deg, #d4af37, #f39c12);
+  color: #0b131a;
+  border: 1px solid #ffd700;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 10px rgba(243, 156, 18, 0.4);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-ww2-start:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(243, 156, 18, 0.6);
+}
+.ww2-waiting-badge {
+  background: rgba(141, 164, 190, 0.12);
+  border: 1px solid rgba(141, 164, 190, 0.3);
+  color: #a4b8cc;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.btn-ww2-bot {
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.45);
+  color: #2ecc71;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-ww2-bot:hover {
+  background: rgba(46, 204, 113, 0.3);
+  border-color: #2ecc71;
+  color: #fff;
+}
+.btn-ww2-reset {
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid rgba(231, 76, 60, 0.45);
+  color: #ff7675;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-ww2-reset:hover {
+  background: rgba(231, 76, 60, 0.3);
+  border-color: #e74c3c;
+  color: #fff;
+}
+
+/* ALERTA DE ORDEN ESPECIAL EN LA BARRA DE TURNO */
+.btn-special-pill-alert {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(243, 156, 18, 0.35));
+  border: 1px solid var(--gold);
+  color: #ffd700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  animation: pulseGold 2s infinite;
+  white-space: nowrap;
+}
+.btn-special-pill-alert:hover {
+  background: rgba(212, 175, 55, 0.45);
+  transform: scale(1.04);
+}
+
+.top-actions {
+  display: flex;
+  gap: 10px;
+}
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.current-player-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 25, 38, 0.85);
+  border: 1.5px solid var(--gold);
+  border-radius: 20px;
+  padding: 3px 12px 3px 5px;
+  transition: all 0.2s ease;
+}
+.player-rank-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 0 6px rgba(0,0,0,0.6);
+}
+.player-info-meta {
+  text-align: left;
+  line-height: 1.15;
+}
+.player-header-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+.player-header-faction {
+  font-size: 9px;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+.btn-leave-lobby {
+  background: rgba(231, 76, 60, 0.15) !important;
+  border: 1px solid rgba(231, 76, 60, 0.4) !important;
+  color: #ff7675 !important;
+  font-size: 11px !important;
+  padding: 5px 10px !important;
+  border-radius: 6px !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-leave-lobby:hover {
+  background: rgba(231, 76, 60, 0.35) !important;
+  color: #fff !important;
+  border-color: #e74c3c !important;
+}
+.btn-top {
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-top:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--gold);
+}
+.btn-top.btn-danger {
+  border-color: rgba(231, 76, 60, 0.5);
+  color: #ff7675;
+}
+.btn-top.btn-danger:hover {
+  background: rgba(231, 76, 60, 0.2);
+}
+
+/* ─────────────── CONTENEDOR DE LA MESA Y SIDEBAR (WWII TACTICAL COMMAND) ─────────────── */
+.table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  background: radial-gradient(circle at 50% 45%, rgba(14, 25, 36, 0.78) 0%, rgba(6, 11, 16, 0.96) 100%),
+              url('assets/ww2_war_room.jpg') no-repeat center center;
+  background-size: cover;
+  overflow: hidden;
+  position: relative;
+}
+
+/* SIDEBAR TÁCTICO (Izquierda) */
+.tactical-sidebar {
+  width: 250px;
+  min-width: 250px;
+  background: rgba(7, 13, 19, 0.96);
+  border-right: 1px solid rgba(212, 175, 55, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 12px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar-block {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sidebar-block-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  padding-bottom: 4px;
+}
+
+/* GUÍA DE TURNO */
+.turn-guide-block {
+  border-color: rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.05);
+}
+.guide-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(243, 156, 18, 0.2);
+  color: #f1c40f;
+  border: 1px solid rgba(243, 156, 18, 0.4);
+}
+.guide-badge.my-turn {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  border-color: #2ecc71;
+}
+.guide-badge.defending {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border-color: #e74c3c;
+  animation: pulseRed 1s infinite alternate;
+}
+.guide-title {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+.guide-desc {
+  font-size: 11px;
+  color: #bdc3c7;
+  line-height: 1.3;
+}
+
+/* PASOS DEL TURNO */
+.turn-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #66788a;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.step-item.active {
+  background: rgba(243, 156, 18, 0.15);
+  color: #f1c40f;
+  font-weight: 700;
+}
+.step-item.completed {
+  color: #2ecc71;
+}
+.step-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* BOTONES DEL SIDEBAR */
+.btn-side-action {
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #e0e6ed;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-side-action:hover {
+  background: rgba(243, 156, 18, 0.2);
+  border-color: var(--gold);
+  color: #fff;
+  transform: translateX(3px);
+}
+.btn-side-attack {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.25), rgba(192, 57, 43, 0.35));
+  border-color: var(--danger);
+  color: #ff7675;
+}
+.btn-side-attack:hover {
+  background: rgba(231, 76, 60, 0.4);
+  color: #fff;
+}
+.btn-side-end {
+  border-color: rgba(243, 156, 18, 0.4);
+  color: var(--gold);
+}
+
+/* RESUMEN CONTINENTAL */
+.continent-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cont-sum-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cont-sum-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+}
+.cont-sum-bar-bg {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.cont-sum-bar-fill {
+  height: 100%;
+  background: var(--c-color, #777);
+  transition: width 0.3s;
+}
+
+/* MINI MAPA GEOPOLÍTICO EN SIDEBAR */
+.mini-map-block {
+  padding: 10px;
+}
+.mini-map-container {
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: #091520;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mini-map-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.mini-map-patch {
+  transition: fill 0.3s ease, filter 0.2s ease;
+  cursor: pointer;
+}
+.mini-map-patch:hover {
+  filter: brightness(1.3) drop-shadow(0 0 3px #fff);
+}
+.mini-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 10px;
+  color: #bdc3c7;
+}
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.legend-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.legend-player-name {
+  white-space: nowrap;
+}
+
+/* VISTA PRINCIPAL (Derecha) */
+.main-table-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* OPONENTES (Arriba) */
+.opponents-zone {
+  display: flex;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  min-height: 105px;
+}
+
+.opponent-card {
+  flex: 1;
+  min-width: 250px;
+  max-width: 320px;
+  background: rgba(14, 24, 34, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 3px solid var(--player-color, #777);
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.opponent-card.current-turn {
+  box-shadow: 0 0 15px rgba(243, 156, 18, 0.45);
+  border-color: var(--gold);
+}
+
+.opp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.opp-name-block {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.opp-flag {
+  font-size: 14px;
+}
+.opp-name {
+  font-weight: 700;
+  font-size: 12px;
+}
+.opp-faction-badge {
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: #8da4be;
+}
+.opp-stats-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.opp-stat-badge {
+  font-size: 9px;
+  color: #8da4be;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.opp-stat-badge strong {
+  color: #fff;
+}
+.opp-stat-badge.special strong {
+  color: var(--gold);
+}
+.opp-stat-badge.total strong {
+  color: #2ecc71;
+}
+
+/* Fila de resumen de continentes de cada rival */
+.opp-continents-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 4px;
+}
+.opp-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+.opp-continent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--cont-color, #555);
+  color: #e2e8f0;
+  cursor: default;
+  transition: transform 0.1s, background-color 0.1s;
+}
+.opp-continent-chip.full-control {
+  background: var(--cont-color);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 0 6px var(--cont-color);
+}
+.cont-fraction {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--gold);
+}
+.opp-continent-chip.full-control .cont-fraction {
+  color: #fff;
+}
+.btn-toggle-opp-details {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #8da4be;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.btn-toggle-opp-details:hover, .btn-toggle-opp-details.active {
+  background: rgba(212, 175, 55, 0.25);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+.opp-details-drawer {
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px;
+  border-radius: 4px;
+  margin-top: 3px;
+  max-height: 90px;
+  overflow-y: auto;
+}
+.opp-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+.opp-detail-header {
+  font-size: 9px;
+  font-weight: 700;
+}
+.opp-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.opp-empty-note {
+  font-size: 9px;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* MINI CARDS DE TERRITORIO */
+.mini-t-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: var(--c-color, #333);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.1s;
+  white-space: nowrap;
+}
+.mini-t-tag:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+/* ZONA CENTRAL DE BATALLA */
+.center-arena {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 6px 12px;
+  overflow-y: auto;
+}
+
+.decks-rack {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+/* LOMOS DIFERENCIADOS PARA CADA TIPO DE MAZO (WWII RETRO) */
+.deck-card {
+  width: 82px;
+  height: 112px;
+  border-radius: 8px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.dice-deck-pile {
+  background: #1a2a1a url('assets/ww2_card_back_dice.jpg') no-repeat center center !important;
+  background-size: cover !important;
+  border: 2px solid #5a4a35 !important;
+}
+.special-deck-pile {
+  background: #250b0e url('assets/ww2_card_back_specials.jpg') no-repeat center center !important;
+  background-size: cover !important;
+  border: 2px solid var(--gold) !important;
+}
+.dice-discard-pile {
+  background: rgba(15, 25, 35, 0.85) !important;
+  border: 2px dashed #64748b !important;
+}
+.deck-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 20, 30, 0.45);
+  pointer-events: none;
+}
+.deck-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 22px rgba(212, 175, 55, 0.4);
+}
+.card-inner.deck-back {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+}
+.deck-icon { font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
+.deck-title { font-size: 9px; font-weight: 800; letter-spacing: 1.5px; color: var(--gold); }
+.deck-count { font-family: 'Share Tech Mono', monospace; font-size: 14px; font-weight: 700; color: #fff; }
+
+.deck-discard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #7f8c8d;
+}
+.deck-discard .deck-title { color: #8da4be; }
+
+/* COMBATE EN VIVO */
+.combat-display {
+  background: rgba(8, 14, 20, 0.96);
+  border: 2px solid var(--danger);
+  border-radius: 12px;
+  padding: 10px 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(231, 76, 60, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 620px;
+  width: 100%;
+  margin: 2px auto;
+  box-sizing: border-box;
+  animation: popIn 0.25s ease;
+  z-index: 10;
+}
+@keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.combat-header-title {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--danger);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.combat-instructions-bar {
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: #ffcccc;
+  text-align: center;
+  margin-bottom: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.combat-clash {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.combatant-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.combatant-label {
+  font-size: 12px;
+  font-weight: 700;
+}
+.combat-territory {
+  font-size: 11px;
+  color: #a4b8cc;
+}
+
+/* VS Y DESGLOSE */
+.combat-vs-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.combat-vs {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--gold);
+}
+.combat-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+}
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.breakdown-die {
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'Share Tech Mono', monospace;
+}
+.die-win {
+  color: #2ecc71;
+  background: rgba(46, 204, 113, 0.25);
+  border: 1px solid rgba(46, 204, 113, 0.5);
+}
+.die-lose {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.15);
+}
+
+/* CARTAS BOCA ABAJO (WWII REVERSO OFICIAL) */
+.card-face-down {
+  background: #111a24 url('assets/ww2_card_back.jpg') no-repeat center center !important;
+  background-size: cover !important;
+  border: 2px solid var(--gold) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.5) !important;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+  animation: pulseGold 2s infinite alternate;
+}
+.card-face-down::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 12, 18, 0.35);
+  pointer-events: none;
+}
+.deck-back-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  background: rgba(5, 10, 16, 0.55);
+  padding: 4px;
+  border-radius: 4px;
+}
+.back-icon { font-size: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.9)); }
+.back-text { font-size: 9px; font-weight: 800; color: var(--gold); letter-spacing: 1px; margin-top: 3px; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+.back-sub { font-size: 8px; color: #d0dbe5; margin-top: 2px; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+
+/* ANIMACIÓN FLIP REVEAL */
+.flip-card-reveal {
+  animation: flipCard 0.6s ease forwards;
+}
+@keyframes flipCard {
+  0% { transform: rotateY(90deg) scale(0.9); opacity: 0.5; }
+  100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+}
+
+.card-slot {
+  width: 100px;
+  height: 140px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.placeholder-card {
+  font-size: 11px;
+  color: #777;
+  text-align: center;
+  padding: 8px;
+}
+
+.combat-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+}
+
+/* TICKER */
+.ticker-box {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #b8c7d9;
+}
+
+/* SECTOR DEL JUGADOR LOCAL (Abajo) */
+.my-zone {
+  background: rgba(8, 15, 22, 0.95);
+  border-top: 2px solid rgba(212, 175, 55, 0.25);
+  padding: 8px 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  z-index: 40;
+}
+
+/* ─────────────── PANEL LATERAL DERECHO: MIS TERRITORIOS (WWII THEATER) ─────────────── */
+.territories-sidebar {
+  width: 280px;
+  min-width: 280px;
+  max-width: 300px;
+  background: rgba(7, 13, 19, 0.96);
+  border-left: 1px solid rgba(212, 175, 55, 0.25);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 10px;
+  gap: 8px;
+  z-index: 50;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.territories-sidebar-header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.t-sidebar-title {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+}
+
+.t-sidebar-title strong {
+  color: #fff;
+  margin: 0 2px;
+}
+
+.t-sidebar-hint {
+  font-size: 10px;
+  color: #8da4be;
+  font-weight: 500;
+}
+
+/* Filtros de continente en la columna derecha */
+.continent-filters {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 2px 0;
+}
+.cont-filter-pill {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #bdc3c7;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.cont-filter-pill:hover, .cont-filter-pill.active {
+  background: var(--c-color, var(--gold));
+  color: #111;
+  font-weight: 800;
+  border-color: transparent;
+}
+
+/* Grilla vertical de cartas de territorio en la columna derecha */
+.territories-rack {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+  overflow-y: auto;
+  padding: 4px 2px 14px 2px;
+  align-content: start;
+}
+
+/* Cartas de territorio en la columna derecha */
+.territory-card {
+  width: 100%;
+  min-width: 0;
+  height: 76px;
+  background: #fcf9f0 linear-gradient(180deg, #fbf7ec 0%, #eee6d3 100%);
+  color: #1a1611;
+  border-radius: 6px;
+  border: 2px solid var(--c-color, #4a3e2e);
+  padding: 5px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 0 5px rgba(160, 135, 95, 0.2);
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  box-sizing: border-box;
+}
+.territory-card:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.7), inset 0 0 8px rgba(212, 175, 55, 0.35);
+  border-color: var(--gold);
+}
+.t-card-cont {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--c-color, #333);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t-card-name {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #111;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.t-card-bridges {
+  font-size: 7.5px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* MANO DE CARTAS PRIVADAS */
+.hand-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #a4b8cc;
+}
+.hand-tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hand-title {
+  color: var(--gold);
+  font-weight: 800;
+}
+.hand-hint {
+  font-size: 10px;
+  color: #7f8c8d;
+  font-weight: normal;
+}
+.hand-bottom-layout {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+}
+.hand-cards {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 6px 4px;
+  min-height: 132px;
+  align-items: center;
+}
+
+/* CARTA DE OBJETIVO SECRETO PERMANENTE (Siempre visible al costado) */
+.permanent-objective-card {
+  width: 290px;
+  min-width: 270px;
+  max-width: 320px;
+  height: 132px;
+  background: linear-gradient(135deg, #132230 0%, #0d1722 100%);
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), inset 0 0 16px rgba(212, 175, 55, 0.08);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  position: relative;
+  user-select: none;
+}
+.permanent-objective-card:hover {
+  transform: translateY(-4px);
+  border-color: #f1c40f;
+  box-shadow: 0 8px 22px rgba(243, 156, 18, 0.45), inset 0 0 20px rgba(212, 175, 55, 0.18);
+}
+.perm-obj-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  padding-bottom: 4px;
+}
+.perm-obj-badge {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.perm-obj-zoom {
+  font-size: 9px;
+  color: #8da4be;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+.permanent-objective-card:hover .perm-obj-zoom {
+  color: #fff;
+  background: rgba(243, 156, 18, 0.3);
+  border-color: var(--gold);
+}
+.perm-obj-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #f1c40f;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 3px;
+}
+.perm-obj-desc {
+  font-size: 10px;
+  color: #c8d6e5;
+  line-height: 1.25;
+  max-height: 48px;
+  overflow-y: auto;
+  padding-right: 2px;
+  margin: 2px 0;
+}
+.perm-obj-desc::-webkit-scrollbar {
+  width: 3px;
+}
+.perm-obj-desc::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.4);
+  border-radius: 2px;
+}
+.perm-obj-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 4px;
+  font-size: 9px;
+  color: #8da4be;
+}
+.perm-obj-common {
+  color: #f39c12;
+  font-size: 9px;
+}
+.perm-obj-common strong {
+  color: #fff;
+}
+
+/* CARTA DE DADOS (ESTILO MILITAR VINTAGE WWII) */
+.dice-card {
+  width: 90px;
+  height: 126px;
+  background: #fbf7ee linear-gradient(180deg, rgba(245, 237, 218, 0.95) 0%, rgba(230, 219, 195, 0.95) 100%);
+  border: 2px solid #5a4a35;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(180, 155, 115, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px 4px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.dice-card::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px dashed rgba(120, 95, 65, 0.35);
+  border-radius: 5px;
+  pointer-events: none;
+}
+.dice-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  border-color: var(--gold);
+  box-shadow: 0 10px 22px rgba(243, 156, 18, 0.5), inset 0 0 12px rgba(212, 175, 55, 0.2);
+}
+
+.card-type-badge {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #6b5742;
+  text-transform: uppercase;
+}
+
+.card-play-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: #3e3223;
+  width: 100%;
+  text-align: center;
+  border-radius: 3px;
+  padding: 2px 0;
+}
+
+.dice-card.playable-pulse {
+  border-color: #f1c40f;
+  animation: pulseGold 1.2s infinite alternate;
+}
+.dice-card.playable-pulse .card-play-label {
+  background: linear-gradient(135deg, #d4af37, #f39c12);
+  color: #111;
+  font-weight: 900;
+}
+
+@keyframes pulseGold {
+  0% { box-shadow: 0 0 8px rgba(243, 156, 18, 0.4); transform: translateY(-4px); }
+  100% { box-shadow: 0 0 20px rgba(243, 156, 18, 0.9); transform: translateY(-8px); }
+}
+
+.dice-circle {
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  border: 2px solid #a82315;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  font-weight: 900;
+  color: #a82315;
+}
+
+/* CARTA ESPECIAL (WWII CONCEPT ART) */
+.special-card {
+  width: 120px;
+  height: 154px;
+  background: #14202c linear-gradient(180deg, #182838 0%, #0d1620 100%);
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(212, 175, 55, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 6px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  flex-shrink: 0;
+}
+.special-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 12px 24px var(--gold-glow);
+}
+.sp-badge {
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.sp-art-container {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 2px;
+}
+.sp-art-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));
+}
+.sp-concept-title {
+  font-family: 'Cinzel', serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #f1c40f;
+  text-align: center;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+.sp-title {
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  line-height: 1;
+}
+.sp-desc {
+  font-size: 8px;
+  color: #c8d6e5;
+  line-height: 1.15;
+  text-align: center;
+  max-height: 28px;
+  overflow: hidden;
+}
+.btn-use-special {
+  background: linear-gradient(135deg, #d4af37, #f39c12);
+  border: none;
+  border-radius: 3px;
+  color: #111;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 3px 0;
+  cursor: pointer;
+  width: 100%;
+  letter-spacing: 0.5px;
+  transition: all 0.15s;
+}
+.btn-use-special:hover {
+  background: #f1c40f;
+  box-shadow: 0 0 8px rgba(243, 156, 18, 0.8);
+}
+
+/* Catálogo modal de especiales */
+.special-catalog-card {
+  background: rgba(14, 24, 34, 0.95);
+  border: 1.5px solid var(--gold);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.cat-art {
+  height: 55px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+.cat-type {
+  font-size: 8px;
+  color: var(--gold);
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.cat-concept {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #f1c40f;
+}
+.cat-title {
+  font-size: 10px;
+  color: #fff;
+  font-weight: 700;
+}
+.cat-desc {
+  font-size: 9px;
+  color: #8da4be;
+  line-height: 1.25;
+}
+
+.deck-hint-pill {
+  font-size: 8px;
+  background: rgba(212, 175, 55, 0.25);
+  color: var(--gold);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 10px;
+  padding: 2px 6px;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.combat-instructions-bar {
+  font-size: 12px;
+  background: rgba(243, 156, 18, 0.15);
+  border: 1px solid rgba(243, 156, 18, 0.4);
+  color: #f1c40f;
+  padding: 5px 14px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  text-align: center;
+  animation: pulseGold 2s infinite alternate;
+}
+
+/* DRAG & DROP ESTILOS */
+.dice-card[draggable="true"], .special-card[draggable="true"] {
+  cursor: grab;
+}
+.dice-card[draggable="true"]:active, .special-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+.dice-card.is-dragging, .special-card.is-dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+  border: 2px dashed var(--gold);
+}
+
+.card-slot {
+  width: 110px;
+  height: 145px;
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.card-slot.active-dropzone {
+  border-color: #f1c40f;
+  background: rgba(241, 196, 15, 0.08);
+  box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
+  cursor: pointer;
+}
+.card-slot.drag-over {
+  border-color: #2ecc71 !important;
+  background: rgba(46, 204, 113, 0.2) !important;
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(46, 204, 113, 0.6) !important;
+}
+
+.no-specials-hint {
+  min-width: 200px;
+  width: 220px;
+  height: 126px;
+  border: 1px dashed rgba(243, 156, 18, 0.4);
+  background: rgba(243, 156, 18, 0.05);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  padding: 8px 10px;
+  color: #bdc3c7;
+  font-size: 11px;
+}
+.no-specials-hint strong {
+  color: var(--gold);
+}
+.no-specials-hint small {
+  font-size: 9px;
+  line-height: 1.2;
+  color: #8da4be;
+}
+.no-specials-actions {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+.btn-hint-action {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 9px;
+  padding: 4px 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-hint-action:hover {
+  background: rgba(243, 156, 18, 0.3);
+  border-color: var(--gold);
+}
+.btn-hint-action.test-btn {
+  background: rgba(46, 204, 113, 0.15);
+  border-color: rgba(46, 204, 113, 0.4);
+  color: #2ecc71;
+}
+.btn-hint-action.test-btn:hover {
+  background: rgba(46, 204, 113, 0.3);
+}
+
+.special-catalog-card {
+  background: rgba(22, 36, 51, 0.9);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.special-catalog-card .cat-title {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.special-catalog-card .cat-type {
+  font-size: 9px;
+  color: #8da4be;
+  text-transform: uppercase;
+}
+.special-catalog-card .cat-desc {
+  font-size: 11px;
+  color: #d0dbe5;
+  line-height: 1.25;
+}
+
+/* ─────────────── MODALES ─────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.teg-modal {
+  background: #111e2b;
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: 24px;
+  width: 460px;
+  max-width: 92vw;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
+}
+.modal-title {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.modal-subtitle {
+  font-size: 13px;
+  color: #8da4be;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+.modal-footer {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.btn-cancel {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.target-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.target-btn {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+.target-btn:hover {
+  background: rgba(243, 156, 18, 0.2);
+  border-color: var(--gold);
+  transform: translateX(3px);
+}
+.target-btn-name { font-weight: 700; font-size: 13px; }
+.target-btn-owner { font-size: 11px; color: #8da4be; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: #112233;
+  border-left: 4px solid var(--gold);
+  padding: 12px 20px;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+  font-size: 14px;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.25s ease;
+  z-index: 2000;
+}
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+.toast.error { border-color: var(--danger); }
+.toast.success { border-color: var(--success); }
+
+/* ═══════════════════ MODAL DOSSIER ORDEN ESPECIAL WWII ═══════════════════ */
+.ww2-special-dossier-modal {
+  max-width: 490px;
+  width: 92%;
+  background: linear-gradient(180deg, #131c26 0%, #0a1118 100%);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  box-shadow: 0 16px 45px rgba(0,0,0,0.9), 0 0 25px rgba(212, 175, 55, 0.3);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+.dossier-stamp {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  color: #e74c3c;
+  border: 1.5px solid #e74c3c;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 1.5px;
+  transform: rotate(3deg);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.dossier-header {
+  padding: 16px 20px 10px 20px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  text-align: left;
+}
+
+.play-special-type {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+  margin-top: 2px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.dossier-body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.play-special-artwork-frame {
+  width: 100%;
+  height: 115px;
+  background: radial-gradient(circle at center, #1e293b 0%, #090f15 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 0 18px rgba(0,0,0,0.7);
+}
+.play-special-artwork-frame svg {
+  max-height: 95px;
+  width: auto;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));
+}
+
+.play-special-timing {
+  text-align: center;
+}
+.badge-playable-yes {
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.5);
+  color: #2ecc71;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+}
+.badge-playable-no {
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  color: #ff7675;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.play-special-desc-box {
+  background: rgba(0, 0, 0, 0.4);
+  border-left: 3px solid var(--gold);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+}
+.desc-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.play-special-desc-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+/* SELECCIÓN DINÁMICA DE OBJETIVO */
+.play-special-target-section {
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px dashed rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.target-section-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.play-special-target-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn-target-selector {
+  flex: 1;
+  min-width: 105px;
+  background: #0d151e;
+  border: 1.5px solid #334155;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #cbd5e1;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.btn-target-selector:hover {
+  background: #1a2533;
+  border-color: var(--gold);
+}
+.btn-target-selector.selected {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+
+.dossier-footer {
+  padding: 12px 20px 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.btn-execute-special {
+  width: auto;
+  margin: 0;
+  padding: 10px 20px;
+  font-size: 13px;
+}
+.btn-execute-special.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+  box-shadow: none;
+}
+
+/* Resaltado de cartas en mano listas para jugar */
+.special-card.playable-pulse {
+  border-color: #2ecc71 !important;
+  box-shadow: 0 0 16px rgba(46, 204, 113, 0.6) !important;
+  animation: pulseGreen 1.5s infinite alternate;
+}
+@keyframes pulseGreen {
+  0% { box-shadow: 0 0 8px rgba(46, 204, 113, 0.4); }
+  100% { box-shadow: 0 0 20px rgba(46, 204, 113, 0.85); }
+}
+
+/* Aviso de carta especial en la guía de turno */
+.sidebar-special-notice {
+  margin-top: 8px;
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  color: #2ecc71;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sidebar-special-notice:hover {
+  background: rgba(46, 204, 113, 0.25);
+  border-color: #2ecc71;
+}
+
+/* Iconos SVG militares */
+.ww2-svg-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
